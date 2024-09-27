@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using Project.Scripts.AttemptController;
+using Project.Scripts.MeetController;
 using Project.Scripts.PopUpController;
 using Project.Scripts.SO;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Answer = Project.Scripts.Game.Answer.Answer;
 
 public class GameController : MonoBehaviour
@@ -18,7 +21,21 @@ public class GameController : MonoBehaviour
 
     [SerializeField] private PopUpController _popUpController;
 
-    [Space] [SerializeField] private TMP_Text _attemptText;
+    [Space] 
+    
+    [SerializeField] private TMP_Text _attemptText;
+
+    [Space] 
+    
+    [SerializeField] private Button _menuButton;
+
+    [Space] 
+    
+    [SerializeField] private MenuConrtoller _menuConrtoller;
+
+    [Space] 
+    
+    [SerializeField] private MeetController _meetController;
 
     private AttemptController _attemptController = new();
 
@@ -26,9 +43,26 @@ public class GameController : MonoBehaviour
 
     private int _correctAnswers = 0;
 
-    private void Start()
+    private void Awake()
     {
+        _menuButton.onClick.AddListener(OnClickMenuButtonHandler);
+    }
+
+    private void OnEnable()
+    {
+        for (var i = 0; i < _answers.Count; i++)
+        {
+            _answers[i].OnAnswer += OnClickAnswerHandler;
+            _answers[i].OnAfterAnswer += OnAfterAnswerHandler;
+        }
+
+        _popUpController.OnBack += OnClickMenuButtonHandler;
+        _popUpController.OnRetry += OnClickRetryButtonHandler;
+        
+        _meetController.gameObject.SetActive(true);
+        
         SetFirstValue();   
+        
         SetWord();
         
         _attemptController.ResetAttempt();
@@ -38,22 +72,16 @@ public class GameController : MonoBehaviour
         _correctAnswers = 0;
     }
 
-    private void OnEnable()
-    {
-        for (int i = 0; i < _answers.Count; i++)
-        {
-            _answers[i].OnAnswer += OnClickAnswerHandler;
-            _answers[i].OnAfterAnswer += OnAfterAnswerHandler;
-        }
-    }
-
     private void OnDisable()
     {
-        for (int i = 0; i < _answers.Count; i++)
+        for (var i = 0; i < _answers.Count; i++)
         {
             _answers[i].OnAnswer -= OnClickAnswerHandler;
             _answers[i].OnAfterAnswer -= OnAfterAnswerHandler;
         }
+        
+        _popUpController.OnBack -= OnClickMenuButtonHandler;
+        _popUpController.OnRetry -= OnClickRetryButtonHandler;
     }
 
     private void SetFirstValue() => SetAnswersButtons();
@@ -131,5 +159,19 @@ public class GameController : MonoBehaviour
         };
 
         return result;
+    }
+    
+    private void OnClickMenuButtonHandler()
+    {
+        gameObject.SetActive(false);
+        
+        _menuConrtoller.gameObject.SetActive(true);
+        
+        //ресетнуть игру (?)
+    }
+    
+    private void OnClickRetryButtonHandler()
+    {
+        
     }
 }
